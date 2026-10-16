@@ -2,44 +2,31 @@
    Si la app se embebe en Wix (u otro dominio), pon aquí la URL de esa página
    para que los enlaces generados en la vista de dirección apunten al dominio
    del colegio en lugar del de GitHub Pages. Dejar vacía usa window.location. */
-const PUBLIC_BASE_URL = "https://www.colegiovictoria.edu.mx/enlacesclasesvirtuales";
+const PUBLIC_BASE_URL = "";
 
 /* --- 1. CONFIG: pega aquí la URL CSV publicada de tu Google Sheet ---
    Para publicar: Archivo → Compartir → Publicar en la Web →
    Hoja entera → Formato: Valores separados por comas (.csv) → Publicar.
    Copia la URL larga que termina en /pub?output=csv y pégala abajo.
    Mientras esté vacía la URL, la página usa datos de ejemplo.            */
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTVHMC9Maku1a5RsQVMhZS213_Po0EUQaKpKjtUXxz5YHUeaeIwiVVt5Rz-XVjFHvMttXjyFbpZ3MoP/pub?gid=1924435207&single=true&output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQbLbOfHDDk_zXfiSPG5GhwLdJ2rh1Ra7f6rUNiu2_iiJcJX4gw00Yd6R6xU4PcL3NbEFLsFbJC8gCm/pub?gid=1924435207&single=true&output=csv";
 
 /* --- 1.1 URL de EDICIÓN de la hoja (para el botón en la vista de
    dirección). Es distinta a la de arriba: la de arriba es la versión
    publicada solo-lectura; esta es la normal que abres para editar,
    tipo https://docs.google.com/spreadsheets/d/<ID>/edit.
    Si se deja vacía, el botón simplemente no se muestra.               */
-const SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1-K4oukT7B4i7CfaGRRMaAULHoYe6VoeucpD2fPpnsyo/edit";
+const SHEET_EDIT_URL = "https://docs.google.com/spreadsheets/d/1oDPoPPNQD1zo4I3GJLd7X5CJaGjp9_IGFPYO7hmbmkw/edit";
 
-/* --- 2. Horarios fijos (lun–vie). Sin receso: baja y alta tienen hoy el
-   mismo horario (8 bloques lun–jue; el viernes son 7, termina a las 13:45).
-   Los bloques que no se usen se marcan LIBRE en la hoja y no muestran tarjeta. --- */
-const SCHEDULE_BLOCKS_BAJA = [   // 1°, 2° y 3°
+/* --- 2. Horario fijo de secundaria (lun–vie), igual para 1°, 2° y 3°.
+   8 bloques lun–jue; el viernes son 7 (termina a las 13:45).
+   Los bloques que no se usen se marcan LIBRE en la hoja y no muestran tarjeta.
+   Para un receso: { recess: true, from: "HH:MM", to: "HH:MM" } --- */
+const SCHEDULE_BLOCKS = [
     { from: "08:00", to: "08:45" },
     { from: "08:45", to: "09:30" },
     { from: "09:30", to: "10:15" },
     { from: "10:15", to: "11:00" },
-    // { recess: true, from: "10:15", to: "10:45" },   // receso desactivado (horario anterior de baja:
-    // { from: "10:45", to: "11:30" },                 //  receso 10:15–10:45 y luego 10:45–11:30)
-    { from: "11:30", to: "12:15" },
-    { from: "12:15", to: "13:00" },
-    { from: "13:00", to: "13:45" },
-    { from: "13:45", to: "14:25" }
-];
-
-const SCHEDULE_BLOCKS_ALTA = [   // 4°, 5° y 6°
-    { from: "08:00", to: "08:45" },
-    { from: "08:45", to: "09:30" },
-    { from: "09:30", to: "10:15" },
-    { from: "10:15", to: "11:00" },
-    // { recess: true, from: "11:00", to: "11:30" },   // receso desactivado: las 4 horas van seguidas
     { from: "11:30", to: "12:15" },
     { from: "12:15", to: "13:00" },
     { from: "13:00", to: "13:45" },
@@ -47,14 +34,13 @@ const SCHEDULE_BLOCKS_ALTA = [   // 4°, 5° y 6°
 ];
 
 function scheduleForGrade(grade, dayLabel) {
-    const blocks = grade <= 3 ? SCHEDULE_BLOCKS_BAJA : SCHEDULE_BLOCKS_ALTA;
     const label = (dayLabel || getTodayDiaLabel()).trim();
-    return /^viernes/i.test(label) ? blocks.slice(0, -1) : blocks;   // viernes: sin la 8ª sesión
+    return /^viernes/i.test(label) ? SCHEDULE_BLOCKS.slice(0, -1) : SCHEDULE_BLOCKS;   // viernes: sin la 8ª sesión
 }
 
 function scheduleForGroup(groupId, dayLabel) {
     const g = GROUPS.find(x => x.id === groupId);
-    return scheduleForGrade(g ? g.grade : 6, dayLabel);
+    return scheduleForGrade(g ? g.grade : 3, dayLabel);
 }
 
 /* --- 2.1 Palabra clave para ocultar una hora -------------------------
@@ -66,7 +52,7 @@ const FREE_SLOT_KEYWORDS = ["libre"];
 
 /* --- 3. Group list --- */
 const GROUPS = [];
-for (let g = 1; g <= 6; g++) {
+for (let g = 1; g <= 3; g++) {
     for (const sec of ["A", "B"]) {
         GROUPS.push({
             id: `${g}${sec}`,
@@ -79,7 +65,7 @@ for (let g = 1; g <= 6; g++) {
 }
 
 function ordinalName(n) {
-    return ["Primero", "Segundo", "Tercero", "Cuarto", "Quinto", "Sexto"][n - 1] || `${n}°`;
+    return ["Primero", "Segundo", "Tercero"][n - 1] || `${n}°`;
 }
 
 /* --- 3.1 Tokens: enlace público -> grupo -------------------------------
@@ -89,18 +75,12 @@ function ordinalName(n) {
    NOTA: al ser una página estática, esta lista vive en el código fuente;
    frena a un papá curioso, no a alguien con conocimientos técnicos.       */
 const TOKENS = {
-    "k7m4p9xz": "1A",
-    "q2wenry8": "1B",
-    "t5bvc3hj": "2A",
-    "z9ufdx47": "2B",
-    "n3kqwer6": "3A",
-    "m8jdytx2": "3B",
-    "r6vbnq93": "4A",
-    "x4cpltm7": "4B",
-    "w7gzhk25": "5A",
-    "f3yntdq8": "5B",
-    "h9mczx46": "6A",
-    "b2qrwvt5": "6B"
+    "rsfi1onl": "1A",
+    "u7rd95r4": "1B",
+    "qnxz8o2y": "2A",
+    "tmxep8hw": "2B",
+    "rpl3x3n6": "3A",
+    "w4myq8i0": "3B"
 };
 
 function tokenForGroup(groupId) {
@@ -109,11 +89,11 @@ function tokenForGroup(groupId) {
 }
 
 /* --- 3.2 Token de dirección/coordinación -------------------------------
-   index.html (el listado completo de los 12 grupos) también exige token,
+   index.html (el listado completo de los 6 grupos) también exige token,
    igual que grupo.html: así nadie llega al listado completo solo
    adivinando "index.html" en el navegador. Este token se comparte
    ÚNICAMENTE con dirección/coordinación, nunca con los papás.            */
-const DIRECTOR_TOKEN = "g9vlpx3q";
+const DIRECTOR_TOKEN = "nai19wlp";
 
 /* --- Date helpers --- */
 const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -133,12 +113,9 @@ function getTodayShortDay(date) {
 const SAMPLE_ROWS = (function () {
     const todayDia = getTodayDiaLabel();
     const plans = {
-        1: ["Español", "Matemáticas", "Conocimiento del medio", "Educación socioemocional", "Inglés", "Artes", "Educación física", "Lectura guiada"],
-        2: ["Matemáticas", "Español", "Inglés", "Conocimiento del medio", "Música", "Lectura guiada", "Computación", "Educación física"],
-        3: ["Español", "Matemáticas", "Ciencias Naturales", "Historia", "Inglés", "Educación física", "Artes", "Tutoría"],
-        4: ["Matemáticas", "Español", "Geografía", "Ciencias Naturales", "Inglés", "Formación Cívica", "Computación", "Educación física"],
-        5: ["Español", "Matemáticas", "Historia", "Ciencias Naturales", "Geografía", "Inglés", "Artes", "Educación física"],
-        6: ["Matemáticas", "Español", "Ciencias Naturales", "Historia", "Geografía", "Formación Cívica", "Inglés", "Computación"]
+        1: ["Español", "Matemáticas", "Biología", "Historia", "Inglés", "Geografía", "Educación física", "Tutoría"],
+        2: ["Matemáticas", "Español", "Física", "Historia", "Inglés", "Formación Cívica", "Computación", "Educación física"],
+        3: ["Español", "Matemáticas", "Química", "Historia", "Inglés", "Formación Cívica", "Artes", "Tutoría"]
     };
     const teachersA = ["Mtra. Lucía Hernández", "Mtro. Andrés Salinas", "Mtra. Paola Ríos", "Mtra. Mariana Cervantes", "Mtro. Iván Fuentes", "Mtra. Daniela Ortega", "Mtro. Roberto Vázquez", "Mtra. Sofía Domínguez"];
     const teachersB = ["Mtra. Adriana López", "Mtro. Sergio Romero", "Mtra. Karla Mendoza", "Mtra. Verónica Ibarra", "Mtro. Óscar Treviño", "Mtra. Renata Cárdenas", "Mtro. Diego Aguilar", "Mtra. Paulina Estrada"];

@@ -36,14 +36,14 @@ function parseCSV(text) {
 function normalizeGroupId(raw) {
     if (!raw) return "";
     const cleaned = String(raw).toUpperCase().replace(/[°º]/g, "").replace(/\s+/g, "");
-    const m = cleaned.match(/^([1-6])([AB])$/);
+    const m = cleaned.match(/^([1-3])([AB])$/);
     return m ? `${m[1]}${m[2]}` : "";
 }
 
 /* Google Sheets exporta horas como "8:00" (sin cero a la izquierda) al
    detectarlas como valores de hora, y los docentes podrían escribirlas de
    formas distintas. Se normaliza a "HH:MM" para que coincida con los
-   bloques de SCHEDULE_BLOCKS_BAJA/ALTA, que siempre llevan dos dígitos. */
+   bloques de SCHEDULE_BLOCKS, que siempre llevan dos dígitos. */
 function normalizeTime(raw) {
     const s = String(raw || "").trim();
     const m = s.match(/^(\d{1,2}):(\d{2})/);

@@ -1,6 +1,6 @@
 /* ============================================================
    Router único — maneja index.html para todos los usuarios:
-   · Token de dirección  → vista con los 12 grupos
+   · Token de dirección  → vista con los 6 grupos
    · Token de grupo      → vista del horario de ese grupo
    · Sin token / inválido → vista de acceso restringido
    ============================================================ */
@@ -158,7 +158,7 @@ async function copyToClipboard(text) {
         return;
     }
 
-    /* Token de dirección → vista completa de los 12 grupos. */
+    /* Token de dirección → vista completa de los 6 grupos. */
     if (token === DIRECTOR_TOKEN) {
         document.getElementById("viewHome").classList.add("is-active");
         renderHome();

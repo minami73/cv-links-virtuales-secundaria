@@ -311,22 +311,15 @@
   }
 
   /* ---------- groups grid ---------- */
+  /* 2 columnas (A | B) x 3 filas (1°, 2°, 3°), en cualquier ancho. */
   .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-  }
-
-  @media (min-width: 480px) {
-      .grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
-      }
+      gap: 12px;
   }
 
   @media (min-width: 720px) {
       .grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 14px;
       }
   }

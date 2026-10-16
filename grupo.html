@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <script>
+        var k = new URLSearchParams(window.location.search).get("k");
+        window.location.replace("index.html" + (k ? "?k=" + encodeURIComponent(k) : ""));
+    </script>
+</head>
+<body></body>
+</html>

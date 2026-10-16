@@ -2,7 +2,7 @@
    Si la app se embebe en Wix (u otro dominio), pon aquí la URL de esa página
    para que los enlaces generados en la vista de dirección apunten al dominio
    del colegio en lugar del de GitHub Pages. Dejar vacía usa window.location. */
-const PUBLIC_BASE_URL = "";
+const PUBLIC_BASE_URL = "https://www.colegiovictoria.edu.mx/enlaces-clases-virtuales-secundaria";
 
 /* --- 1. CONFIG: pega aquí la URL CSV publicada de tu Google Sheet ---
    Para publicar: Archivo → Compartir → Publicar en la Web →

@@ -71,6 +71,6 @@ falta el enlace que dirección comparte de forma privada.
 
 ## Estado actual
 
-- URL del CSV, tokens y horario de secundaria configurados en `config.js`; pendiente `PUBLIC_BASE_URL` (URL de Wix).
+- URL del CSV, tokens y horario de secundaria configurados en `config.js`; `PUBLIC_BASE_URL` apunta a la página de Wix de secundaria.
 - Diseño responsive, soporta Zoom/Meet/Teams.
 - Sin frameworks ni backend — HTML, CSS y JS vanilla.
